@@ -3,6 +3,9 @@
   "version": "0.0.2-0",
   "description": "A TODO project to be used in the terminal",
   "main": "index.js",
+  "bin": {
+    "togo": "bin/index.js"
+  },
   "scripts": {
     "eslint": "eslint src/**/*.ts",
     "compile": "tsc --noEmit --diagnostics",

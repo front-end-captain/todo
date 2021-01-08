@@ -15,7 +15,8 @@
     "pre:release": "npm run clean && npm run format && npm run eslint",
     "prepublishOnly": "npm run build",
     "build": "rimraf lib && cross-env NODE_ENV=production tsc --pretty",
-    "watch": "npm run build -- --watch --diagnostics"
+    "watch": "npm run build -- --watch --diagnostics",
+    "commit": "lint-staged && git-cz"
   },
   "repository": {
     "type": "git",
@@ -70,9 +71,7 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "lint-staged",
-      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS",
-      "prepare-commit-msg": "exec < /dev/tty && git cz --hook || true"
+      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
     }
   },
   "lint-staged": {

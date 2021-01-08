@@ -1,0 +1,43 @@
+{
+  // More tsconfig info see https://www.typescriptlang.org/docs/handbook/tsconfig-json.html
+  "include": ["src/**/*", "typings/*"],
+  "exclude": ["lib"],
+
+  "compilerOptions": {
+    /* Project Options */
+    "declaration": true,
+    "target": "ES6",
+    "module": "CommonJS",
+    "removeComments": true,
+    "sourceMap": true,
+    "outDir": "lib",
+
+    /* Strict Checks */
+    "alwaysStrict": true,
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "strict": true,
+    "strictBindCallApply": true,
+    "strictFunctionTypes": true,
+    "strictNullChecks": true,
+    "strictPropertyInitialization": true,
+
+    /* Module Resolution */
+    "allowSyntheticDefaultImports": true,
+    "baseUrl": "./",
+    "esModuleInterop": true,
+    "moduleResolution": "node",
+
+    /* Linter Checks */
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+
+    /* Advanced Options */
+    "resolveJsonModule": true,
+    "skipDefaultLibCheck": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
+  }
+}

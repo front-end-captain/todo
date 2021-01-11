@@ -1,6 +1,6 @@
 import { Command, Option } from "commander";
 import dedent from "dedent";
-import { error, info, log } from "@luban-cli/cli-shared-utils";
+import { error, info, log, warn } from "@luban-cli/cli-shared-utils";
 import chalk from "chalk";
 import inquirer from "inquirer";
 import md5 from "md5";
@@ -119,9 +119,19 @@ program
     console.log();
 
     todoList.forEach((todoItem) => {
-      console.log(
-        `${chalk.cyan(todoItem.index)}. ${chalk.green(todoItem.title)}`,
-      );
+      const status =
+        todoItem.status === "doing"
+          ? "🕑"
+          : todoItem.status === "done"
+          ? "✅"
+          : "";
+
+      const index = chalk.cyan(todoItem.index);
+      const title = chalk.green(todoItem.title);
+      const author = chalk.bgCyanBright(todoItem.author?.name || "");
+
+      console.log(`${status} ${index}. ${title} ${author}`);
+
       console.log();
     });
   });
@@ -140,7 +150,12 @@ program
         },
       ])
       .then((answer) => {
-        todo.login(username, md5(answer.password), () => {
+        todo.login(username, md5(answer.password), (msg) => {
+          if (msg) {
+            warn(msg);
+            return;
+          }
+
           info("login success");
         });
       })

@@ -4,9 +4,7 @@ import { error } from "@luban-cli/cli-shared-utils";
 import { v4 as uuidv4 } from "uuid";
 
 import { Author, TodoItem } from "./definitions";
-
-const TODO_STORE_FILE = ".togo.store";
-const TOGO_CONFIG_FILE = ".togo.config";
+import { TODO_STORE_FILE, TOGO_CONFIG_FILE } from "./constant";
 
 class Todo {
   private userDir: string;
@@ -156,12 +154,31 @@ class Todo {
     this.authors = this.authors.map((author) => ({ ...author, login: false }));
   }
 
-  public login(username: string, password: string, callback?: () => void) {
+  private findSpecifyAuthor(authorName: string) {
+    return this.authors.find((author) => author.name === authorName);
+  }
+
+  public login(
+    authorName: string,
+    password: string,
+    callback?: (msg?: string) => void,
+  ) {
     this.logoutEveryAuthor();
+
+    const targetAuthor = this.findSpecifyAuthor(authorName);
+
+    if (targetAuthor) {
+      if (password !== targetAuthor.password) {
+        if (typeof callback === "function") {
+          callback("invalid name or password");
+          return;
+        }
+      }
+    }
 
     this.authors.push({
       id: uuidv4(),
-      name: username,
+      name: authorName,
       password,
       login: true,
     });
@@ -184,11 +201,29 @@ class Todo {
   }
 
   public getTodoList(all = false) {
+    const currentLoginAuthor = this.authors.find((author) => author.login);
+
+    let filteredTodoList = this.todoList.filter(
+      (todoItem) => todoItem.status === "doing",
+    );
+
     if (all) {
-      return this.todoList.filter((todoItem) => todoItem.status !== "delete");
+      filteredTodoList = this.todoList.filter(
+        (todoItem) => todoItem.status !== "delete",
+      );
     }
 
-    return this.todoList.filter((todoItem) => todoItem.status === "doing");
+    if (currentLoginAuthor) {
+      filteredTodoList = filteredTodoList.filter(
+        (todoItem) => todoItem.author?.id === currentLoginAuthor.id,
+      );
+    } else {
+      filteredTodoList = filteredTodoList.filter(
+        (todoItem) => !todoItem.author,
+      );
+    }
+
+    return filteredTodoList;
   }
 
   public clear(callback?: () => void) {

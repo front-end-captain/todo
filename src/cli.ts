@@ -1,7 +1,9 @@
 import { Command, Option } from "commander";
 import dedent from "dedent";
-import { info, log } from "@luban-cli/cli-shared-utils";
+import { error, info, log } from "@luban-cli/cli-shared-utils";
 import chalk from "chalk";
+import inquirer from "inquirer";
+import md5 from "md5";
 
 import { Todo } from "./todo";
 
@@ -121,6 +123,42 @@ program
         `${chalk.cyan(todoItem.index)}. ${chalk.green(todoItem.title)}`,
       );
       console.log();
+    });
+  });
+
+program
+  .command("login <username>")
+  .description("login togo with username")
+  .action((username) => {
+    inquirer
+      .prompt<{ password: string }>([
+        {
+          name: "password",
+          type: "password",
+          message: "Password:",
+          mask: true,
+        },
+      ])
+      .then((answer) => {
+        todo.login(username, md5(answer.password), () => {
+          info("login success");
+        });
+      })
+      .catch((e) => {
+        if (e.isTtyError) {
+          error("Prompt couldn't be rendered in the current environment");
+        } else {
+          error("Something else went wrong", e);
+        }
+      });
+  });
+
+program
+  .command("logout")
+  .description("logout togo")
+  .action(() => {
+    todo.logout(() => {
+      info("logout success");
     });
   });
 

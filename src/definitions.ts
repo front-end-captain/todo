@@ -3,6 +3,8 @@ export type TodoItemStatus = "done" | "doing" | "delete";
 export type Author = {
   id: string;
   name: string;
+  password: string;
+  login: boolean;
 };
 
 export type TodoItem = {
@@ -14,5 +16,5 @@ export type TodoItem = {
   updateTime: number;
   deleteTime: number | null;
   status: TodoItemStatus;
-  authorId: string | null;
+  author: Author | null;
 };

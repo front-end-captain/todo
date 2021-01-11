@@ -107,7 +107,6 @@ program
 
     const todoList = todo.getTodoList(options.all);
 
-
     if (todoList.length === 0) {
       info("There is any todo item exist");
       return;

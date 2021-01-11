@@ -13,6 +13,7 @@
     "eslint": "eslint src/**/*.ts",
     "compile": "tsc --noEmit --diagnostics",
     "format": "prettier --write src/**/*.{ts,tsx}",
+    "format:check": "prettier --check src/**/*.{ts,tsx}",
     "release:pre": "np prerelease --tag=beta --yolo --no-2fa --any-branch",
     "release:prod": "np patch --tag=latest --yolo --no-2fa --branch=master",
     "pre:release": "npm run clean && npm run format && npm run eslint",
@@ -82,7 +83,7 @@
   "lint-staged": {
     "src/**/*.ts": [
       "npm run eslint",
-      "npm run format"
+      "npm run format:check"
     ]
   },
   "engines": {

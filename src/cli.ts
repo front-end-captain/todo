@@ -4,6 +4,8 @@ import { error, info, log, warn } from "@luban-cli/cli-shared-utils";
 import chalk from "chalk";
 import inquirer from "inquirer";
 import md5 from "md5";
+import fs from "fs-extra";
+import path from "path";
 
 import { Todo } from "./todo";
 
@@ -118,7 +120,7 @@ program
     info("Print todo list:");
     console.log();
 
-    todoList.forEach((todoItem) => {
+    todoList.forEach((todoItem, i) => {
       const status =
         todoItem.status === "doing"
           ? "🕑"
@@ -126,7 +128,7 @@ program
           ? "✅"
           : "";
 
-      const index = chalk.cyan(todoItem.index);
+      const index = chalk.cyan(i + 1);
       const title = chalk.green(todoItem.title);
       // const author = chalk.bgCyanBright(todoItem.author?.name || "");
 
@@ -175,6 +177,39 @@ program
     todo.logout(() => {
       info("logout success");
     });
+  });
+
+program
+  .command("export")
+  .description("export all todo items, include doing and done")
+  .action(() => {
+    let exportedTodo = "";
+    todo.getTodoList(true).forEach((todoItem, index) => {
+      exportedTodo += `${index + 1}. ${todoItem.title}\n`;
+    });
+
+    process.stdout.write(exportedTodo);
+  });
+
+program
+  .command("import <file>")
+  .description("import todo items from a file")
+  .action((file) => {
+    const content = fs.readFileSync(path.resolve(file), "utf-8").trim();
+
+    if (content) {
+      const items = content.split("\n");
+      items.forEach((item) => {
+        const title = item.split(".")[1];
+        if (title) {
+          todo.add(title.trim());
+        }
+      });
+
+      info("import success");
+    } else {
+      error(`The specified file ${file} is empty`);
+    }
   });
 
 program.on("--help", () => {

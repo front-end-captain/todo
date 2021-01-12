@@ -3,6 +3,7 @@
 # Runtime data
 test
 lib
+coverage
 
 # Dependency directories
 /node_modules
@@ -26,4 +27,4 @@ lib
 .vscode
 .idea
 
-coverage
+export.txt

@@ -72,28 +72,22 @@ class Todo {
     return this.authors.find((author) => author.login);
   }
 
-  private filterTodoItemsOfSpecifiedAuthor(authorName: string) {
-    return this.todoList.filter(
-      (todoItem) => todoItem.author?.name === authorName,
-    );
-  }
-
-  private filterTodoItemsOfNoAuthor() {
-    return this.todoList.filter((todoItem) => !todoItem.author);
-  }
-
   private findSpecifyTodoItemOnIndex(todoIndex: number) {
     const currentLoginAuthor = this.findLoginAuthor();
 
     if (currentLoginAuthor) {
       return this.todoList
-        .filter((todoItem) => todoItem.author?.id === currentLoginAuthor.id)
-        .find((todoItem) => todoItem.index === todoIndex);
+        .filter(
+          (todoItem) =>
+            todoItem.author?.id === currentLoginAuthor.id &&
+            todoItem.status !== "delete",
+        )
+        .find((_, index) => index + 1 === todoIndex);
     }
 
     return this.todoList
-      .filter((todoItem) => !todoItem.author)
-      .find((todoItem) => todoItem.index === todoIndex);
+      .filter((todoItem) => !todoItem.author && todoItem.status !== "delete")
+      .find((_, index) => index + 1 === todoIndex);
   }
 
   public add(title: string, callback?: () => void) {
@@ -103,17 +97,8 @@ class Todo {
 
     const user = this.findLoginAuthor();
 
-    let index = 0;
-
-    if (user) {
-      index = this.filterTodoItemsOfSpecifiedAuthor(user.name).length + 1;
-    } else {
-      index = this.filterTodoItemsOfNoAuthor().length + 1;
-    }
-
     this.todoList.push({
       id,
-      index,
       title,
       content: "",
       status: "doing",
@@ -244,8 +229,8 @@ class Todo {
     }
   }
 
-  public getSpecifiedTodoItem(index: number) {
-    return this.todoList.find((todoItem) => todoItem.index === index);
+  public getSpecifiedTodoItem(todoIndex: number) {
+    return this.todoList.find((_, index) => index + 1 === todoIndex);
   }
 
   public getSpecifiedTodoItemStatus(index: number) {

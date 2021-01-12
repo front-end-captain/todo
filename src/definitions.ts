@@ -14,7 +14,7 @@ export type TodoItem = {
   content: string;
   createTime: number;
   updateTime: number;
-  deleteTime: number | null;
+  deleteTime?: number;
   status: TodoItemStatus;
-  author: Author | null;
+  author?: Author;
 };

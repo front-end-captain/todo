@@ -21,7 +21,8 @@
     "build": "rimraf lib && cross-env NODE_ENV=production tsc --pretty",
     "watch": "npm run build -- --watch --diagnostics",
     "commit": "lint-staged && git-cz",
-    "test": "jest --env node --runInBand --detectOpenHandles --passWithNoTests src/*.test.ts"
+    "test": "jest --env node --runInBand --detectOpenHandles --passWithNoTests",
+    "test:coverage": "jest --coverage --color --env node --runInBand --detectOpenHandles --passWithNoTests"
   },
   "repository": {
     "type": "git",

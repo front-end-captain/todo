@@ -25,3 +25,5 @@ lib
 # IDE
 .vscode
 .idea
+
+coverage

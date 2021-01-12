@@ -128,9 +128,9 @@ program
 
       const index = chalk.cyan(todoItem.index);
       const title = chalk.green(todoItem.title);
-      const author = chalk.bgCyanBright(todoItem.author?.name || "");
+      // const author = chalk.bgCyanBright(todoItem.author?.name || "");
 
-      console.log(`${status} ${index}. ${title} ${author}`);
+      console.log(`${status} ${index}. ${title}`);
 
       console.log();
     });

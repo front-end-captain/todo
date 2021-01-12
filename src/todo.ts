@@ -4,7 +4,11 @@ import { error } from "@luban-cli/cli-shared-utils";
 import { v4 as uuidv4 } from "uuid";
 
 import { Author, TodoItem } from "./definitions";
-import { TODO_STORE_FILE, TOGO_CONFIG_FILE } from "./constant";
+import {
+  TODO_STORE_FILE,
+  TOGO_CONFIG_FILE,
+  LOGIN_FAILED_MSG,
+} from "./constant";
 
 class Todo {
   private userDir: string;
@@ -21,132 +25,38 @@ class Todo {
     this.storeFilePath = path.join(this.userDir, TODO_STORE_FILE);
     this.configFilePath = path.join(this.userDir, TOGO_CONFIG_FILE);
 
-    this.todoList = this.loadUserLocalTodoStore(this.storeFilePath);
+    this.todoList = this.loadDataFromSpecifyFile(this.storeFilePath);
 
-    this.authors = this.loadUserLocalConfigFile(this.configFilePath);
+    this.authors = this.loadDataFromSpecifyFile(this.configFilePath);
   }
 
-  private loadUserLocalConfigFile(configFilePath: string) {
-    let localConfigFile: Author[] = [];
+  private loadDataFromSpecifyFile<T extends unknown[]>(path: string): T {
+    let data = [];
 
-    if (!fs.existsSync(configFilePath)) {
-      fs.writeFileSync(configFilePath, "[]", { encoding: "utf-8" });
-      return localConfigFile;
+    if (!fs.existsSync(path)) {
+      fs.writeFileSync(path, "[]", { encoding: "utf-8" });
     }
 
     try {
-      const fileContent = fs.readFileSync(configFilePath, {
-        encoding: "utf-8",
-      });
+      const fileContent = fs.readFileSync(path, { encoding: "utf-8" });
 
       if (fileContent.trim() !== "" && fileContent !== "[]") {
-        localConfigFile = JSON.parse(fileContent);
+        data = JSON.parse(fileContent);
       }
     } catch (e) {
-      error("load user local config file failed", e);
+      error(`load data from ${path} failed`, e);
     }
 
-    return localConfigFile;
+    return data as T;
   }
 
-  private writeUserLocalConfigFile(configFilePath: string, data: Author[]) {
+  private writeDataToSpecifyFile<T>(path: string, data: T) {
     try {
-      if (fs.existsSync(configFilePath)) {
-        fs.writeJSON(configFilePath, data);
+      if (fs.existsSync(path)) {
+        fs.writeJSONSync(path, data);
       }
     } catch (e) {
-      error("write user local config file failed", e);
-    }
-  }
-
-  private loadUserLocalTodoStore(storeFilePath: string) {
-    let userLocalTodoStore: TodoItem[] = [];
-
-    if (!fs.existsSync(storeFilePath)) {
-      fs.writeFileSync(storeFilePath, "[]", { encoding: "utf-8" });
-    }
-
-    try {
-      const fileContent = fs.readFileSync(storeFilePath, { encoding: "utf-8" });
-
-      if (fileContent.trim() !== "" && fileContent !== "[]") {
-        userLocalTodoStore = JSON.parse(fileContent);
-      }
-    } catch (e) {
-      error("load user local todo store file failed", e);
-    }
-
-    return userLocalTodoStore;
-  }
-
-  private writeUserLocalTodoStore(storeFilePath: string, data: TodoItem[]) {
-    try {
-      if (fs.existsSync(storeFilePath)) {
-        fs.writeJSON(storeFilePath, data);
-      }
-    } catch (e) {
-      error("write user local todo store file failed", e);
-    }
-  }
-
-  public add(title: string, callback?: () => void) {
-    const id = uuidv4();
-    const index = this.todoList.length + 1;
-
-    const now = new Date().getTime();
-
-    const user = this.authors.find((author) => author.login);
-
-    this.todoList.push({
-      id,
-      index,
-      title,
-      content: "",
-      status: "doing",
-      createTime: now,
-      updateTime: now,
-      deleteTime: null,
-      author: user || null,
-    });
-
-    this.writeUserLocalTodoStore(this.storeFilePath, this.todoList);
-
-    if (typeof callback === "function") {
-      callback();
-    }
-  }
-
-  public done(todoIndex: number, callback?: () => void) {
-    this.todoList = this.todoList.map((todoItem) => {
-      if (todoIndex === todoItem.index) {
-        return { ...todoItem, status: "done" };
-      }
-
-      return todoItem;
-    });
-
-    this.writeUserLocalTodoStore(this.storeFilePath, this.todoList);
-
-    if (typeof callback === "function") {
-      callback();
-    }
-  }
-
-  public del(todoIndex: number, callback?: () => void) {
-    const now = new Date().getTime();
-
-    this.todoList = this.todoList.map((todoItem) => {
-      if (todoIndex === todoItem.index) {
-        return { ...todoItem, status: "delete", deleteTime: now };
-      }
-
-      return todoItem;
-    });
-
-    this.writeUserLocalTodoStore(this.storeFilePath, this.todoList);
-
-    if (typeof callback === "function") {
-      callback();
+      error(`write ${path} failed`, e);
     }
   }
 
@@ -156,6 +66,105 @@ class Todo {
 
   private findSpecifyAuthor(authorName: string) {
     return this.authors.find((author) => author.name === authorName);
+  }
+
+  private findLoginAuthor() {
+    return this.authors.find((author) => author.login);
+  }
+
+  private filterTodoItemsOfSpecifiedAuthor(authorName: string) {
+    return this.todoList.filter(
+      (todoItem) => todoItem.author?.name === authorName,
+    );
+  }
+
+  private filterTodoItemsOfNoAuthor() {
+    return this.todoList.filter((todoItem) => !todoItem.author);
+  }
+
+  private findSpecifyTodoItemOnIndex(todoIndex: number) {
+    const currentLoginAuthor = this.findLoginAuthor();
+
+    if (currentLoginAuthor) {
+      return this.todoList
+        .filter((todoItem) => todoItem.author?.id === currentLoginAuthor.id)
+        .find((todoItem) => todoItem.index === todoIndex);
+    }
+
+    return this.todoList
+      .filter((todoItem) => !todoItem.author)
+      .find((todoItem) => todoItem.index === todoIndex);
+  }
+
+  public add(title: string, callback?: () => void) {
+    const id = uuidv4();
+
+    const now = new Date().getTime();
+
+    const user = this.findLoginAuthor();
+
+    let index = 0;
+
+    if (user) {
+      index = this.filterTodoItemsOfSpecifiedAuthor(user.name).length + 1;
+    } else {
+      index = this.filterTodoItemsOfNoAuthor().length + 1;
+    }
+
+    this.todoList.push({
+      id,
+      index,
+      title,
+      content: "",
+      status: "doing",
+      createTime: now,
+      updateTime: now,
+      author: user,
+    });
+
+    this.writeDataToSpecifyFile(this.storeFilePath, this.todoList);
+
+    if (typeof callback === "function") {
+      callback();
+    }
+  }
+
+  public done(todoIndex: number, callback?: () => void) {
+    const targetTodoItemId = this.findSpecifyTodoItemOnIndex(todoIndex)?.id;
+
+    this.todoList = this.todoList.map((todoItem) => {
+      if (targetTodoItemId === todoItem.id) {
+        return { ...todoItem, status: "done" };
+      }
+
+      return todoItem;
+    });
+
+    this.writeDataToSpecifyFile(this.storeFilePath, this.todoList);
+
+    if (typeof callback === "function") {
+      callback();
+    }
+  }
+
+  public del(todoIndex: number, callback?: () => void) {
+    const now = new Date().getTime();
+
+    const targetTodoItemId = this.findSpecifyTodoItemOnIndex(todoIndex)?.id;
+
+    this.todoList = this.todoList.map((todoItem) => {
+      if (targetTodoItemId === todoItem.id) {
+        return { ...todoItem, status: "delete", deleteTime: now };
+      }
+
+      return todoItem;
+    });
+
+    this.writeDataToSpecifyFile(this.storeFilePath, this.todoList);
+
+    if (typeof callback === "function") {
+      callback();
+    }
   }
 
   public login(
@@ -170,7 +179,7 @@ class Todo {
     if (targetAuthor) {
       if (password !== targetAuthor.password) {
         if (typeof callback === "function") {
-          callback("invalid name or password");
+          callback(LOGIN_FAILED_MSG);
           return;
         }
       }
@@ -183,7 +192,7 @@ class Todo {
       login: true,
     });
 
-    this.writeUserLocalConfigFile(this.configFilePath, this.authors);
+    this.writeDataToSpecifyFile(this.configFilePath, this.authors);
 
     if (typeof callback === "function") {
       callback();
@@ -193,7 +202,7 @@ class Todo {
   public logout(callback?: () => void) {
     this.logoutEveryAuthor();
 
-    this.writeUserLocalConfigFile(this.configFilePath, this.authors);
+    this.writeDataToSpecifyFile(this.configFilePath, this.authors);
 
     if (typeof callback === "function") {
       callback();
@@ -201,7 +210,7 @@ class Todo {
   }
 
   public getTodoList(all = false) {
-    const currentLoginAuthor = this.authors.find((author) => author.login);
+    const currentLoginAuthor = this.findLoginAuthor();
 
     let filteredTodoList = this.todoList.filter(
       (todoItem) => todoItem.status === "doing",
@@ -227,12 +236,24 @@ class Todo {
   }
 
   public clear(callback?: () => void) {
-    this.writeUserLocalTodoStore(this.storeFilePath, []);
+    this.writeDataToSpecifyFile(this.storeFilePath, []);
     this.todoList = [];
 
     if (typeof callback === "function") {
       callback();
     }
+  }
+
+  public getSpecifiedTodoItem(index: number) {
+    return this.todoList.find((todoItem) => todoItem.index === index);
+  }
+
+  public getSpecifiedTodoItemStatus(index: number) {
+    return this.getSpecifiedTodoItem(index)?.status;
+  }
+
+  public getAuthors() {
+    return this.authors;
   }
 }
 

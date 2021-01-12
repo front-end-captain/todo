@@ -2,7 +2,11 @@ import fs from "fs-extra";
 import md5 from "md5";
 import path from "path";
 
-import { TODO_STORE_FILE, TOGO_CONFIG_FILE } from "./constant";
+import {
+  TODO_STORE_FILE,
+  TOGO_CONFIG_FILE,
+  LOGIN_FAILED_MSG,
+} from "./constant";
 import { Todo } from "./todo";
 
 const userHomeDir = process.env.HOME || process.env.USERPROFILE || "";
@@ -228,12 +232,10 @@ describe("Todo", () => {
     expect(clearCb.mock.calls.length).toBe(1);
   });
 
-  test("should remind 'invalid name or password' while login with wrong password", () => {
+  test(`should remind '${LOGIN_FAILED_MSG}' while login with wrong password`, () => {
     const todo = new Todo();
 
-    const loginCb = jest.fn((msg) => {
-      expect(msg === "invalid name or password");
-    });
+    const loginCb = jest.fn((msg) => expect(msg === LOGIN_FAILED_MSG));
 
     todo.login(testAuthorName, testPassword);
     todo.logout();

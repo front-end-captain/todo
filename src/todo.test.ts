@@ -41,8 +41,8 @@ describe("Todo", () => {
     // eslint-disable-next-line no-new
     new Todo();
 
-    expect(fs.existsSync(storeFilePath));
-    expect(fs.existsSync(configFilePath));
+    expect(fs.existsSync(storeFilePath)).toBe(true);
+    expect(fs.existsSync(configFilePath)).toBe(true);
   });
 
   test("should add a todo item", () => {
@@ -50,8 +50,8 @@ describe("Todo", () => {
 
     todo.add("coding 10 minutes");
 
-    expect(todo.getTodoList().length === 1);
-    expect(todo.getSpecifiedTodoItemStatus(1) === "doing");
+    expect(todo.getTodoList().length === 1).toBe(true);
+    expect(todo.getSpecifiedTodoItemStatus(1) === "doing").toBe(true);
   });
 
   test("should complete a todo item", () => {
@@ -59,11 +59,11 @@ describe("Todo", () => {
 
     todo.add("coding 10 minutes");
 
-    expect(todo.getTodoList().length === 1);
+    expect(todo.getTodoList().length === 1).toBe(true);
 
     todo.done(1);
 
-    expect(todo.getSpecifiedTodoItemStatus(1) === "done");
+    expect(todo.getSpecifiedTodoItemStatus(1) === "done").toBe(true);
   });
 
   test("should delete a todo item", () => {
@@ -71,11 +71,14 @@ describe("Todo", () => {
 
     todo.add("coding 10 minutes");
 
-    expect(todo.getTodoList().length === 1);
+    expect(todo.getTodoList().length === 1).toBe(true);
 
     todo.del(1);
 
-    expect(todo.getSpecifiedTodoItemStatus(1) === "done");
+    const status = todo.getSpecifiedTodoItemStatus(1);
+    console.log(status);
+
+    expect(todo.getSpecifiedTodoItemStatus(1) === "delete").toBe(true);
   });
 
   test("should list all 'doing' todo item", () => {
@@ -85,18 +88,18 @@ describe("Todo", () => {
     todo.add("go home");
     todo.add("eating");
 
-    expect(todo.getTodoList().length === 3);
+    expect(todo.getTodoList().length === 3).toBe(true);
 
     todo.done(2);
 
-    expect(todo.getSpecifiedTodoItemStatus(1) === "doing");
-    expect(todo.getSpecifiedTodoItemStatus(2) === "done");
-    expect(todo.getSpecifiedTodoItemStatus(3) === "doing");
+    expect(todo.getSpecifiedTodoItemStatus(1) === "doing").toBe(true);
+    expect(todo.getSpecifiedTodoItemStatus(2) === "done").toBe(true);
+    expect(todo.getSpecifiedTodoItemStatus(3) === "doing").toBe(true);
 
     expect(todo.getTodoList().length === 2);
   });
 
-  test("should list all todo item but 'deleted'", () => {
+  test("should list all todo item, include doing, done and deleted", () => {
     const todo = new Todo();
 
     todo.add("coding 10 minutes");
@@ -104,17 +107,17 @@ describe("Todo", () => {
     todo.add("eating");
     todo.add("writing");
 
-    expect(todo.getTodoList().length === 3);
+    expect(todo.getTodoList().length === 4).toBe(true);
 
     todo.done(2);
     todo.del(3);
 
-    expect(todo.getSpecifiedTodoItemStatus(1) === "doing");
-    expect(todo.getSpecifiedTodoItemStatus(2) === "done");
-    expect(todo.getSpecifiedTodoItemStatus(3) === "delete");
-    expect(todo.getSpecifiedTodoItemStatus(4) === "doing");
+    expect(todo.getSpecifiedTodoItemStatus(1) === "doing").toBe(true);
+    expect(todo.getSpecifiedTodoItemStatus(2) === "done").toBe(true);
+    expect(todo.getSpecifiedTodoItemStatus(3) === "delete").toBe(true);
+    expect(todo.getSpecifiedTodoItemStatus(4) === "doing").toBe(true);
 
-    expect(todo.getTodoList(true).length === 3);
+    expect(todo.getTodoList(true).length === 4).toBe(true);
   });
 
   test("should login with a author name", () => {
@@ -122,14 +125,14 @@ describe("Todo", () => {
 
     todo.login(testAuthorName, testPassword);
 
-    expect(todo.getAuthors().length === 1);
+    expect(todo.getAuthors().length === 1).toBe(true);
 
     const loginAuthor = todo
       .getAuthors()
       .find((author) => author.name === testAuthorName);
 
-    expect(loginAuthor);
-    expect(loginAuthor?.password === md5(testPassword));
+    expect(loginAuthor?.login).toBeTruthy();
+    expect(md5(loginAuthor?.password || "") === md5(testPassword)).toBe(true);
   });
 
   test("should logout current login author", () => {
@@ -137,11 +140,11 @@ describe("Todo", () => {
 
     todo.login(testAuthorName, testPassword);
 
-    expect(todo.getAuthors().length === 1);
+    expect(todo.getAuthors().length === 1).toBeTruthy();
 
     todo.logout();
 
-    expect(todo.getAuthors().every((author) => !author.login));
+    expect(todo.getAuthors().every((author) => !author.login)).toBeTruthy();
   });
 
   test("add todo item with login author", () => {
@@ -149,17 +152,17 @@ describe("Todo", () => {
 
     todo.login(testAuthorName, testPassword);
 
-    expect(todo.getAuthors().length === 1);
+    expect(todo.getAuthors().length === 1).toBeTruthy();
 
     todo.add("coding 10 minutes");
 
-    expect(todo.getTodoList().length === 1);
+    expect(todo.getTodoList().length === 1).toBeTruthy();
 
     expect(
       todo
         .getTodoList()
-        .find((todoItem) => todoItem.author?.name === testAuthorName),
-    );
+        .find((todoItem) => todoItem.author?.name === testAuthorName)?.title,
+    ).toBe("coding 10 minutes");
   });
 
   test("should list author's todo items", () => {
@@ -170,25 +173,31 @@ describe("Todo", () => {
 
     todo.add(unLoginTodoItemTitle);
 
-    expect(todo.getTodoList().length === 1);
-    expect(todo.getSpecifiedTodoItemStatus(1) === "doing");
-    expect(todo.getSpecifiedTodoItem(1)?.title === unLoginTodoItemTitle);
+    expect(todo.getTodoList().length === 1).toBeTruthy();
+    expect(todo.getSpecifiedTodoItemStatus(1) === "doing").toBeTruthy();
+    expect(
+      todo.getSpecifiedTodoItem(1)?.title === unLoginTodoItemTitle,
+    ).toBeTruthy();
 
     todo.login(testAuthorName, testPassword);
 
-    expect(todo.getAuthors().length === 1);
+    expect(todo.getAuthors().length === 1).toBeTruthy();
 
     todo.add(loginTodoItemTitle);
 
-    expect(todo.getTodoList().length === 1);
-    expect(todo.getSpecifiedTodoItemStatus(1) === "doing");
-    expect(todo.getSpecifiedTodoItem(1)?.title === loginTodoItemTitle);
+    expect(todo.getTodoList().length === 1).toBeTruthy();
+    expect(todo.getSpecifiedTodoItemStatus(1) === "doing").toBeTruthy();
+    expect(
+      todo.getSpecifiedTodoItem(1)?.title === loginTodoItemTitle,
+    ).toBeTruthy();
 
     todo.logout();
 
-    expect(todo.getTodoList().length === 1);
-    expect(todo.getSpecifiedTodoItemStatus(1) === "doing");
-    expect(todo.getSpecifiedTodoItem(1)?.title === unLoginTodoItemTitle);
+    expect(todo.getTodoList().length === 1).toBeTruthy();
+    expect(todo.getSpecifiedTodoItemStatus(1) === "doing").toBeTruthy();
+    expect(
+      todo.getSpecifiedTodoItem(1)?.title === unLoginTodoItemTitle,
+    ).toBeTruthy();
   });
 
   test("should clear all local todo items", () => {
@@ -203,7 +212,9 @@ describe("Todo", () => {
     todo.logout();
     todo.clear();
 
-    expect(fs.readFileSync(storeFilePath, { encoding: "utf-8" }) === "[]");
+    expect(
+      fs.readFileSync(storeFilePath, { encoding: "utf-8" }) === "[]\n",
+    ).toBeTruthy();
   });
 
   test("should invoke callback", () => {
@@ -235,7 +246,9 @@ describe("Todo", () => {
   test(`should remind '${LOGIN_FAILED_MSG}' while login with wrong password`, () => {
     const todo = new Todo();
 
-    const loginCb = jest.fn((msg) => expect(msg === LOGIN_FAILED_MSG));
+    const loginCb = jest.fn((msg) =>
+      expect(msg === LOGIN_FAILED_MSG).toBeTruthy(),
+    );
 
     todo.login(testAuthorName, testPassword);
     todo.logout();

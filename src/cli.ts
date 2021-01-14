@@ -8,6 +8,13 @@ import fs from "fs-extra";
 import path from "path";
 
 import { Todo } from "./todo";
+import { TodoItemStatus } from "./definitions";
+
+const statusIcon: Record<TodoItemStatus, string> = {
+  doing: "🕑",
+  done: "✅",
+  delete: "❌",
+};
 
 function camelize(str: string): string {
   return str.replace(/-(\w)/g, (_, c) => (c ? c.toUpperCase() : ""));
@@ -121,18 +128,10 @@ program
     console.log();
 
     todoList.forEach((todoItem, i) => {
-      const status =
-        todoItem.status === "doing"
-          ? "🕑"
-          : todoItem.status === "done"
-          ? "✅"
-          : "";
-
       const index = chalk.cyan(i + 1);
       const title = chalk.green(todoItem.title);
-      // const author = chalk.bgCyanBright(todoItem.author?.name || "");
 
-      console.log(`${status} ${index}. ${title}`);
+      console.log(`${statusIcon[todoItem.status]} ${index}. ${title}`);
 
       console.log();
     });

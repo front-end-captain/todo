@@ -202,9 +202,7 @@ class Todo {
     );
 
     if (all) {
-      filteredTodoList = this.todoList.filter(
-        (todoItem) => todoItem.status !== "delete",
-      );
+      filteredTodoList = this.todoList;
     }
 
     if (currentLoginAuthor) {
@@ -230,7 +228,7 @@ class Todo {
   }
 
   public getSpecifiedTodoItem(todoIndex: number) {
-    return this.todoList.find((_, index) => index + 1 === todoIndex);
+    return this.getTodoList(true).find((_, index) => index + 1 === todoIndex);
   }
 
   public getSpecifiedTodoItemStatus(index: number) {

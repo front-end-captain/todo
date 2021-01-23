@@ -76,9 +76,8 @@ describe("Todo", () => {
     todo.del(1);
 
     const status = todo.getSpecifiedTodoItemStatus(1);
-    console.log(status);
 
-    expect(todo.getSpecifiedTodoItemStatus(1) === "delete").toBe(true);
+    expect(status === "delete").toBe(true);
   });
 
   test("should list all 'doing' todo item", () => {
@@ -220,12 +219,12 @@ describe("Todo", () => {
   test("should invoke callback", () => {
     const todo = new Todo();
 
-    const addCb = jest.fn(() => console.log("added"));
-    const doneCb = jest.fn(() => console.log("done"));
-    const delCb = jest.fn(() => console.log("deleted"));
-    const loginCb = jest.fn(() => console.log("login"));
-    const logoutCb = jest.fn(() => console.log("logout"));
-    const clearCb = jest.fn(() => console.log("clear"));
+    const addCb = jest.fn(() => void 0);
+    const doneCb = jest.fn(() => void 0);
+    const delCb = jest.fn(() => void 0);
+    const loginCb = jest.fn(() => void 0);
+    const logoutCb = jest.fn(() => void 0);
+    const clearCb = jest.fn(() => void 0);
 
     todo.login(testAuthorName, testPassword, loginCb);
 

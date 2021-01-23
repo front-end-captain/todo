@@ -1,6 +1,6 @@
 {
   "name": "togo-cli",
-  "version": "0.0.6-0",
+  "version": "0.0.6",
   "description": "A TODO project to be used in the terminal",
   "main": "index.js",
   "files": [

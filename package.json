@@ -16,8 +16,6 @@
     "format:check": "prettier --check src/**/*.{ts,tsx}",
     "release:beta": "togo-np prerelease --tag=beta --allow-any-branch --run-scripts='eslint test build'",
     "release": "togo-np patch --tag=latest --branch=master --run-scripts='eslint test build'",
-    "pre:release": "npm run clean && npm run format && npm run eslint",
-    "prepublishOnly": "npm run build",
     "build": "rimraf lib && cross-env NODE_ENV=production tsc --pretty",
     "watch": "npm run build -- --watch --diagnostics",
     "commit": "lint-staged && git-cz",
@@ -73,7 +71,7 @@
     "lint-staged": "^9.5.0",
     "np": "^7.2.0",
     "rimraf": "^3.0.2",
-    "togo-np": "0.0.8",
+    "togo-np": "0.0.9",
     "ts-jest": "^26.4.4",
     "typescript": "~4.1.3"
   },
